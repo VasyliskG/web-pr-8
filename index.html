@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Практична робота 8</title>
+	<style>
+		:root {
+			color-scheme: light;
+			--bg: #f4efe8;
+			--panel: rgba(255, 255, 255, 0.78);
+			--text: #1f2937;
+			--muted: #667085;
+			--accent: #c65f2d;
+			--accent-2: #1f7a8c;
+			--border: rgba(31, 41, 55, 0.12);
+			--shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			font-family: Arial, Helvetica, sans-serif;
+			color: var(--text);
+			background:
+				radial-gradient(circle at top left, rgba(198, 95, 45, 0.14), transparent 30%),
+				radial-gradient(circle at top right, rgba(31, 122, 140, 0.16), transparent 28%),
+				linear-gradient(180deg, #fbf7f2 0%, var(--bg) 100%);
+		}
+
+		.page {
+			max-width: 1100px;
+			margin: 0 auto;
+			padding: 40px 20px 56px;
+		}
+
+		h1 {
+			margin: 0 0 10px;
+			font-size: clamp(2rem, 4vw, 3.2rem);
+			letter-spacing: -0.03em;
+		}
+
+		.lead {
+			margin: 0 0 28px;
+			max-width: 760px;
+			color: var(--muted);
+			line-height: 1.6;
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+			gap: 18px;
+		}
+
+		.card {
+			position: relative;
+			padding: 20px;
+			border: 1px solid var(--border);
+			border-radius: 20px;
+			background: var(--panel);
+			backdrop-filter: blur(10px);
+			box-shadow: var(--shadow);
+		}
+
+		.card h2 {
+			margin: 0 0 14px;
+			font-size: 1.05rem;
+		}
+
+		.button,
+		.drop-btn,
+		.date-btn,
+		.counter-btn,
+		.toggle-btn {
+			appearance: none;
+			border: 0;
+			border-radius: 999px;
+			padding: 12px 18px;
+			font: inherit;
+			font-weight: 700;
+			color: white;
+			background: linear-gradient(135deg, var(--accent), #e07a3f);
+			box-shadow: 0 10px 22px rgba(198, 95, 45, 0.25);
+			cursor: pointer;
+			transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+		}
+
+		.button:hover,
+		.drop-btn:hover,
+		.date-btn:hover,
+		.counter-btn:hover,
+		.toggle-btn:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 14px 28px rgba(198, 95, 45, 0.3);
+		}
+
+		.button:active,
+		.drop-btn:active,
+		.date-btn:active,
+		.counter-btn:active,
+		.toggle-btn:active {
+			transform: translateY(0);
+		}
+
+		.dropdown {
+			position: relative;
+			display: inline-block;
+		}
+
+		.drop-btn::after {
+			content: '▾';
+			display: inline-block;
+			margin-left: 10px;
+			transition: transform 0.2s ease;
+		}
+
+		.dropdown.open .drop-btn::after {
+			transform: rotate(180deg);
+		}
+
+		.menu {
+			position: absolute;
+			top: calc(100% + 10px);
+			left: 0;
+			min-width: 220px;
+			padding: 10px;
+			margin: 0;
+			list-style: none;
+			border: 1px solid var(--border);
+			border-radius: 16px;
+			background: #fff;
+			box-shadow: var(--shadow);
+			display: none;
+			z-index: 1;
+		}
+
+		.dropdown.open .menu {
+			display: block;
+			animation: fadeIn 0.18s ease;
+		}
+
+		.menu li {
+			padding: 10px 12px;
+			border-radius: 12px;
+			color: var(--text);
+		}
+
+		.menu li:hover {
+			background: rgba(31, 122, 140, 0.1);
+		}
+
+		.color-box {
+			width: 100%;
+			min-height: 140px;
+			border-radius: 18px;
+			background: var(--box-color, #dbeafe);
+			border: 1px solid var(--border);
+			transition: background-color 0.25s ease;
+		}
+
+		.text-box {
+			margin: 0 0 14px;
+			line-height: 1.7;
+			color: #374151;
+		}
+
+		.text-box.clamped {
+			display: -webkit-box;
+			line-clamp: 3;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 3;
+			overflow: hidden;
+		}
+
+		.counter-value,
+		.date-output {
+			margin-top: 14px;
+			padding: 14px 16px;
+			border-radius: 14px;
+			background: rgba(255, 255, 255, 0.82);
+			border: 1px solid var(--border);
+			min-height: 50px;
+			display: flex;
+			align-items: center;
+			font-weight: 700;
+		}
+
+		.card.accent {
+			border-top: 4px solid var(--accent-2);
+		}
+
+		.color-controls,
+		.counter-controls,
+		.date-controls,
+		.text-controls,
+		.list-controls,
+		.calc-controls {
+			display: grid;
+			gap: 14px;
+		}
+
+		.list-card,
+		.calc-card {
+			overflow: hidden;
+		}
+
+		.section-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			padding: 6px 12px;
+			border-radius: 999px;
+			background: rgba(31, 122, 140, 0.12);
+			color: var(--accent-2);
+			font-size: 0.85rem;
+			font-weight: 700;
+		}
+
+		.section-note {
+			margin: 0;
+			color: var(--muted);
+			line-height: 1.5;
+		}
+
+		.search-input,
+		.number-input {
+			width: 100%;
+			border: 1px solid var(--border);
+			border-radius: 14px;
+			padding: 12px 14px;
+			font: inherit;
+			background: rgba(255, 255, 255, 0.9);
+			outline: none;
+			transition: border-color 0.2s ease, box-shadow 0.2s ease;
+		}
+
+		.search-input:focus,
+		.number-input:focus {
+			border-color: rgba(31, 122, 140, 0.5);
+			box-shadow: 0 0 0 4px rgba(31, 122, 140, 0.1);
+		}
+
+		.people-list {
+			display: grid;
+			gap: 10px;
+			padding: 0;
+			margin: 0;
+			list-style: none;
+		}
+
+		.people-list li {
+			padding: 12px 14px;
+			border-radius: 14px;
+			background: rgba(31, 122, 140, 0.08);
+			border: 1px solid rgba(31, 122, 140, 0.12);
+			font-weight: 600;
+			transition: transform 0.2s ease, background 0.2s ease;
+		}
+
+		.people-list li:hover {
+			transform: translateX(3px);
+			background: rgba(31, 122, 140, 0.12);
+		}
+
+		.calculator-grid {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 12px;
+		}
+
+		.calculator-grid .button {
+			grid-column: 1 / -1;
+			justify-self: start;
+		}
+
+		.result-box {
+			padding: 14px 16px;
+			border-radius: 14px;
+			background: rgba(31, 122, 140, 0.08);
+			border: 1px solid rgba(31, 122, 140, 0.14);
+			font-weight: 700;
+			min-height: 50px;
+			display: flex;
+			align-items: center;
+		}
+
+		.result-box.is-error {
+			background: rgba(198, 95, 45, 0.1);
+			border-color: rgba(198, 95, 45, 0.18);
+			color: #b45309;
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(-4px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="page">
+		<h1>Інтерактивні елементи</h1>
+
+		<section class="grid">
+			<article class="card">
+				<h2>1. Випадаюче меню</h2>
+				<div class="dropdown" id="dropdown">
+					<button class="drop-btn" id="dropdownButton" type="button">Відкрити меню</button>
+					<ul class="menu" id="dropdownMenu">
+						<li>Пункт меню 1</li>
+						<li>Пункт меню 2</li>
+						<li>Пункт меню 3</li>
+					</ul>
+				</div>
+			</article>
+
+			<article class="card">
+				<h2>2. Зміна кольору блоку</h2>
+				<div class="color-controls">
+					<div class="color-box" id="colorBox"></div>
+					<button class="button" id="colorButton" type="button">Змінити колір</button>
+				</div>
+			</article>
+
+			<article class="card">
+				<h2>3. Текст із розгортанням</h2>
+				<div class="text-controls">
+					<p class="text-box clamped" id="toggleText">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer ut elit at lorem finibus efficitur. Sed at ipsum id eros viverra pretium. Aenean sed est sit amet ex finibus vulputate. Duis vel justo et magna dignissim tincidunt. Morbi consequat, neque non tincidunt maximus, nisl dolor sollicitudin lorem, at vestibulum metus turpis sed nisi. Curabitur in massa et sem bibendum condimentum.</p>
+					<button class="toggle-btn" id="textToggleButton" type="button">Показати весь текст</button>
+				</div>
+			</article>
+
+			<article class="card">
+				<h2>4. Лічильник натискань</h2>
+				<div class="counter-controls">
+					<button class="counter-btn" id="counterButton" type="button">Натиснути</button>
+					<div class="counter-value" id="counterValue">Кількість натискань: 0</div>
+				</div>
+			</article>
+
+			<article class="card">
+				<h2>5. Поточна дата і час</h2>
+				<div class="date-controls">
+					<button class="date-btn" id="dateButton" type="button">Показати дату і час</button>
+					<div class="date-output" id="dateOutput">Натисніть кнопку, щоб побачити дату.</div>
+				</div>
+			</article>
+            
+			<article class="card list-card">
+				<h2>6. Список і поле введення</h2>
+				<div class="list-controls">
+					<input class="search-input" type="text" id="searchInput" placeholder="Пошук по списку..." aria-label="Пошук по списку">
+
+					<ul class="people-list" id="itemList">
+						<li>Олександр</li>
+						<li>Марія</li>
+						<li>Дмитро</li>
+						<li>Катерина</li>
+						<li>Іван</li>
+						<li>Анастасія</li>
+					</ul>
+				</div>
+			</article>
+
+			<article class="card calc-card">
+				<h2>7. Два поля введення та кнопка</h2>
+				<div class="calc-controls">
+					<div class="calculator-grid">
+						<input class="number-input" type="number" id="num1" placeholder="Число 1" aria-label="Перше число">
+						<input class="number-input" type="number" id="num2" placeholder="Число 2" aria-label="Друге число">
+						<button class="button" id="calcBtn" type="button">Обчислити</button>
+					</div>
+
+					<div class="result-box" id="result">Результат з’явиться тут.</div>
+				</div>
+			</article>
+		</section>
+	</main>
+
+	<script src="app.js"></script>
+</body>
+</html>
